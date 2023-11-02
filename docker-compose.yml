@@ -4,7 +4,7 @@ services:
   database:
     image: postgres
     volumes:
-      - ./example_schema.sql:/docker-entrypoint-initdb.d/example_schema.sql
+      - ./data_schema.sql:/docker-entrypoint-initdb.d/data_schema.sql
     environment:
       - POSTGRES_DB=codetest
       - POSTGRES_USER=codetest
@@ -17,9 +17,32 @@ services:
     ports:
       - 5432:5432
 
-  app:
-    image: app
-    build: src
-    command: ["./main.py"]
+  data_ingest:
+    build:
+      context: src
+      dockerfile: Dockerfile_data_ingest
     volumes:
       - ./data:/data
+    environment:
+      - DATABASE_URI=postgresql://codetest:password@database/codetest
+
+  data_summarize:
+    build:
+      context: src
+      dockerfile: Dockerfile_data_summarize
+    volumes:
+      - ./data:/data
+    depends_on:
+      - data_ingest
+
+  app:
+    build:
+      context: src
+      dockerfile: Dockerfile
+    command: ["python","main.py"]
+    volumes:
+      - ./data:/data
+    depends_on:
+      - data_ingest
+      - data_summarize
+
