@@ -1,27 +1,12 @@
-#!/usr/bin/env python
+from data_ingestion import ingest_data
+from data_summary import generate_summary
 
-import csv
-import json
-import sqlalchemy
+def main():
+    # Data ingestion logic
+    ingest_data()
 
-# connect to the database
-engine = sqlalchemy.create_engine("postgresql://codetest:password@database/codetest")
-connection = engine.connect()
+    # Data summary logic
+    generate_summary()
 
-metadata = sqlalchemy.schema.MetaData(engine)
-
-# make an ORM object to refer to the table
-Example = sqlalchemy.schema.Table('examples', metadata, autoload=True, autoload_with=engine)
-
-# read the CSV data file into the table
-with open('/data/example.csv') as csv_file:
-  reader = csv.reader(csv_file)
-  next(reader)
-  for row in reader:
-    connection.execute(Example.insert().values(name = row[0]))
-
-# output the table to a JSON file
-with open('/data/example_python.json', 'w') as json_file:
-  rows = connection.execute(sqlalchemy.sql.select([Example])).fetchall()
-  rows = [{'id': row[0], 'name': row[1]} for row in rows]
-  json.dump(rows, json_file, separators=(',', ':'))
+if __name__ == "__main__":
+    main()
