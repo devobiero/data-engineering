@@ -1,8 +1,11 @@
+# Base image
 FROM python:3.10
 
+# Setting the working directory to /app
 WORKDIR /app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the current directory  into the image
+COPY . ./
 
-COPY main.py ./
+# Installing the required libraries
+RUN pip install --no-cache-dir -r requirements.txt
